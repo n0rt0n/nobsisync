@@ -1,0 +1,122 @@
+.nobsisync-help {
+  margin-bottom: 1em;
+  padding: 0.75em 1em;
+  border-radius: var(--radius-m);
+  background: var(--background-secondary);
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+.nobsisync-help p {
+  margin: 0 0 0.5em 0;
+}
+
+.nobsisync-help p:last-child {
+  margin-bottom: 0;
+}
+
+.nobsisync-warn {
+  color: var(--text-warning);
+}
+
+/* --- Журнал --------------------------------------------------------- */
+
+.nobsisync-journal-empty {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+.nobsisync-journal-recent,
+.nobsisync-journal {
+  font-size: var(--font-ui-small);
+}
+
+.nobsisync-recent-row,
+.nobsisync-journal summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6em;
+  align-items: baseline;
+  padding: 0.35em 0.6em;
+  border-radius: var(--radius-s);
+}
+
+.nobsisync-recent-row:nth-child(odd),
+.nobsisync-journal details:nth-child(odd) summary {
+  background: var(--background-secondary);
+}
+
+.nobsisync-journal summary {
+  cursor: pointer;
+}
+
+.nobsisync-entry-time {
+  font-family: var(--font-monospace);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.nobsisync-entry-trigger {
+  color: var(--text-faint);
+}
+
+.nobsisync-entry-summary {
+  flex: 1 1 12em;
+}
+
+/* Цветная метка слева: успех, ошибки по файлам, полный сбой */
+.nobsisync-ok .nobsisync-entry-time {
+  border-left: 3px solid var(--color-green);
+  padding-left: 0.5em;
+}
+
+.nobsisync-warn .nobsisync-entry-time {
+  border-left: 3px solid var(--color-orange);
+  padding-left: 0.5em;
+}
+
+.nobsisync-fail .nobsisync-entry-time {
+  border-left: 3px solid var(--color-red);
+  padding-left: 0.5em;
+}
+
+.nobsisync-entry-body {
+  padding: 0.4em 0 0.6em 1.2em;
+  font-family: var(--font-monospace);
+  font-size: var(--font-smallest);
+}
+
+.nobsisync-line {
+  padding: 0.1em 0;
+  overflow-wrap: anywhere;
+}
+
+.nobsisync-line.nobsisync-error {
+  color: var(--text-error);
+}
+
+.nobsisync-line.nobsisync-muted {
+  color: var(--text-faint);
+}
+
+.nobsisync-journal-toolbar {
+  display: flex;
+  gap: 0.8em;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.8em;
+}
+
+.nobsisync-journal-path {
+  font-family: var(--font-monospace);
+  font-size: var(--font-smallest);
+  color: var(--text-faint);
+  overflow-wrap: anywhere;
+}
+
+.nobsisync-excludes {
+  width: 100%;
+  min-width: 15em;
+  font-family: var(--font-monospace);
+  resize: vertical;
+}
