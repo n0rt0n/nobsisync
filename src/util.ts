@@ -66,28 +66,44 @@ function globToRegExp(glob: string): RegExp {
   return new RegExp(`^${body}$`);
 }
 
+/**
+ * Фильтр путей с семантикой, привычной по .gitignore:
+ *
+ * - шаблон без слэша сравнивается с каждым сегментом пути на любой глубине,
+ *   поэтому «*.lock» отсекает и «база.kdbx.lock», и «Пароли/база.kdbx.lock»;
+ * - шаблон со слэшем сравнивается с путём целиком от корня хранилища,
+ *   поэтому «Архив/*.pdf» действует только внутри «Архив».
+ *
+ * В обоих случаях совпадение с родителем исключает всё поддерево.
+ */
 export class PathFilter {
-  private matchers: RegExp[];
+  private bySegment: RegExp[] = [];
+  private byPath: RegExp[] = [];
 
   constructor(patterns: string[]) {
-    this.matchers = patterns
-      .map((p) => trimSlashes(p.trim()))
-      .filter((p) => p.length > 0)
-      .map(globToRegExp);
+    for (const raw of patterns) {
+      const pattern = trimSlashes(raw.trim());
+      if (!pattern) continue;
+      (pattern.includes("/") ? this.byPath : this.bySegment).push(globToRegExp(pattern));
+    }
   }
 
-  /**
-   * Путь исключён, если под шаблон подпадает он сам или любой его родитель —
-   * так шаблон ".obsidian" отсекает всё поддерево целиком.
-   */
   isExcluded(relPath: string): boolean {
     const segments = relPath.split("/");
+
+    for (const segment of segments) {
+      for (const m of this.bySegment) {
+        if (m.test(segment)) return true;
+      }
+    }
+
     for (let i = 1; i <= segments.length; i++) {
       const prefix = segments.slice(0, i).join("/");
-      for (const m of this.matchers) {
+      for (const m of this.byPath) {
         if (m.test(prefix)) return true;
       }
     }
+
     return false;
   }
 }

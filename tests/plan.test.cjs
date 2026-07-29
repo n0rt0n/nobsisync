@@ -51,12 +51,19 @@ for (const l of [EMPTY, L("a"), L("b")]) {
   }
 }
 
-// Исключения
-const f = new PathFilter([".obsidian", ".trash", "**/.DS_Store", "Архив/*.pdf", "Моя папка"]);
+// Исключения: шаблон без слэша действует на любой глубине (как в .gitignore),
+// шаблон со слэшем — только от корня хранилища
+const f = new PathFilter([".obsidian", ".trash", ".DS_Store", "*.lock", "Архив/*.pdf", "Моя папка"]);
 eq(f.isExcluded(".obsidian/plugins/x/data.json"), true, "исключается всё поддерево .obsidian");
 eq(f.isExcluded(".obsidian"), true, "исключается сама папка .obsidian");
-eq(f.isExcluded("заметки/.DS_Store"), true, "шаблон с **");
-eq(f.isExcluded("Архив/скан.pdf"), true, "* внутри сегмента");
+eq(f.isExcluded("заметки/.DS_Store"), true, "шаблон без слэша ловит файл в подпапке");
+eq(f.isExcluded(".DS_Store"), true, "он же ловит файл в корне");
+eq(f.isExcluded("база.kdbx.lock"), true, "*.lock в корне");
+eq(f.isExcluded("Пароли/база.kdbx.lock"), true, "*.lock на любой глубине");
+eq(f.isExcluded("Пароли/глубже/ещё/б.kdbx.lock"), true, "*.lock сколь угодно глубоко");
+eq(f.isExcluded("Пароли/база.kdbx"), false, "сама база паролей не исключается");
+eq(f.isExcluded("Архив/скан.pdf"), true, "шаблон со слэшем внутри своей папки");
+eq(f.isExcluded("Другое/скан.pdf"), false, "шаблон со слэшем не действует вне своей папки");
 eq(f.isExcluded("Архив/скан.md"), false, "другое расширение не исключается");
 eq(f.isExcluded("Моя папка/файл.md"), true, "пробел в имени папки не ломает шаблон");
 eq(f.isExcluded("заметки/идея.md"), false, "обычная заметка проходит");
