@@ -195,6 +195,25 @@ const client = () => new YandexDiskClient(() => "тестовый-токен");
     eq(disk.dirs.has("/Obsidian"), true, "базовая папка создана");
   }
 
+  // Текст не-JSON ответа (так отвечает downloader Диска) попадает в сообщение
+  {
+    const disk = makeDisk({ "/Obsidian/a.md": Buffer.from("x") });
+    const inner = disk.handler;
+    disk.handler = async (opts) => {
+      if (new URL(opts.url).hostname === "downloader.example") {
+        return { status: 500, json: undefined, text: "file IO failure: no more reliable hosts",
+                 headers: { "retry-after": "0" }, arrayBuffer: new ArrayBuffer(0) };
+      }
+      return inner(opts);
+    };
+    use(disk);
+    const c = client();
+    let caught = null;
+    try { await c.download("/Obsidian/a.md"); } catch (e) { caught = e; }
+    eq(caught.status, 500, "статус сохранён");
+    eq(caught.message, "HTTP 500: file IO failure: no more reliable hosts", "текст тела в сообщении");
+  }
+
   // Удаление уже отсутствующего файла не считается ошибкой
   {
     const disk = makeDisk();

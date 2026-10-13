@@ -136,15 +136,28 @@ export class YandexDiskClient {
   private toError(res: RequestUrlResponse): YandexError {
     let message = `HTTP ${res.status}`;
     let code: string | undefined;
+    let fromBody: string | undefined;
     try {
       const body = res.json as { message?: string; description?: string; error?: string } | undefined;
       if (body) {
         code = body.error;
-        message = body.message ?? body.description ?? message;
+        fromBody = body.message ?? body.description;
       }
     } catch {
-      // тело не JSON — оставляем текст по статусу
+      // тело не JSON — ниже попробуем взять его как текст
     }
+    // Downloader/uploader Диска отвечают не JSON, а голым текстом вроде
+    // "file IO failure: no more reliable hosts". Без него в журнале остаётся
+    // один статус, и причину приходится искать вручную.
+    if (!fromBody) {
+      try {
+        const text = (res.text ?? "").trim();
+        if (text && text.length <= 200 && !text.startsWith("<")) fromBody = text;
+      } catch {
+        // тело недоступно — остаёмся со статусом
+      }
+    }
+    if (fromBody) message = `${message}: ${fromBody}`;
     if (res.status === 401) message = "Токен недействителен или истёк";
     if (res.status === 507) message = "На Яндекс.Диске закончилось место";
     return new YandexError(message, res.status, code);
